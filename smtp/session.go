@@ -64,10 +64,8 @@ func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 			continue
 		case commandResponse.action == COMMANDACTION_EXIT:
 			smtpSession.writeOutputLine(fmt.Sprintf("%d %s", commandResponse.commandStatus, commandResponse.commandResponseText))
-			s.closeSmtpConnection(smtpSession)
-			break
+			return
 		}
-
 	}
 }
 

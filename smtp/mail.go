@@ -2,16 +2,9 @@ package smtp
 
 import (
 	"fmt"
+	"github.com/andrewjc/milhaux/common"
 	"strings"
 )
-
-type MailMessage struct {
-	to   string
-	from string
-	data string
-
-	queueId string
-}
 
 func (s *SmtpServer_impl) smtpCommandMail(session *SmtpSession, commandArg commandArgPair) *CommandResponse {
 
@@ -39,15 +32,14 @@ func (s *SmtpServer_impl) smtpCommandReceiveData(session *SmtpSession, commandAr
 
 func (s *SmtpServer_impl) smtpCommandBufferData(smtpSession *SmtpSession, commandLine string) *CommandResponse {
 	if commandLine == END_DATA_COMMAND_SEQUENCE {
-		newMessage := &MailMessage{
-			smtpSession.StateData[SESSION_DATA_KEY_MAIL_FROM].(string),
-			smtpSession.StateData[SESSION_DATA_KEY_MAIL_TO].(string),
-			smtpSession.ReceiveDataBuffer.String(),
-			"",
+		newMessage := &common.MailMessage{
+			To:   smtpSession.StateData[SESSION_DATA_KEY_MAIL_FROM].(string),
+			From: smtpSession.StateData[SESSION_DATA_KEY_MAIL_TO].(string),
+			Data: smtpSession.ReceiveDataBuffer.String(),
 		}
 		s.onSubmitMail(newMessage)
 		smtpSession.SmtpState = SMTP_SERVER_STATE_DONE
-		return &CommandResponse{COMMANDACTION_CONTINUE, SMTP_COMMAND_STATUS_MAIL_ACTION_OK, fmt.Sprintf("OK. Queued for Delivery. Queue id: %s", newMessage.queueId)}
+		return &CommandResponse{COMMANDACTION_CONTINUE, SMTP_COMMAND_STATUS_MAIL_ACTION_OK, fmt.Sprintf("OK. Queued for Delivery. Queue id: %s", newMessage.QueueId)}
 	} else {
 		smtpSession.ReceiveDataBuffer.WriteString(commandLine)
 		return &CommandResponse{COMMANDACTION_NONE, SMTP_COMMAND_STATUS_NONE, ""}

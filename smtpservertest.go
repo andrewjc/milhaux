@@ -7,8 +7,19 @@ import (
 )
 
 func main() {
-	performUnauthenticatedTest()
+	go spawner()
+
+	for {
+		select {}
+	}
 }
+
+func spawner() {
+	for {
+		performUnauthenticatedTest()
+	}
+}
+
 func performUnauthenticatedTest() {
 	// send an email from external to internal
 	c, err := smtp.Dial("0.0.0.0:25")

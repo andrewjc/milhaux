@@ -1,7 +1,7 @@
 package backend
 
 import (
-	"github.com/milhaux/common"
+	"github.com/andrewjc/milhaux/common"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,4 +18,8 @@ func (backend *DbStoreStorageBackend) Start() error {
 	log.Info("Starting db backed mailstore backend instance...")
 
 	return nil
+}
+
+func (backend *DbStoreStorageBackend) QueueSubmit(mailmessage *common.MailMessage) {
+
 }

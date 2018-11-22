@@ -1,7 +1,8 @@
 package backend
 
 import (
-	"github.com/milhaux/common"
+	"github.com/andrewjc/milhaux/common"
+	"github.com/andrewjc/milhaux/smtp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,21 +28,23 @@ func init() {
 	packageConfig.available = true
 }
 
-type MailStoreBackend interface {
-	Start() error
+type MailStoreBackend struct {
+	smtpComponentChannel chan common.MailMessage
 }
 
 func NewMailStoreBackend(config *common.ApplicationConfig) MailStoreBackend {
 	log.Debug("Creating a mailstore backend instance...")
 
-	switch packageConfig.backend {
-	case MEMSTORE:
-		return &MemStoreStorageBackend{config}
-	case FILESTORE:
-		return &FsStoreStorageBackend{config}
-	case DBSTORE:
-		return &DbStoreStorageBackend{config}
-	}
+	return MailStoreBackend{}
+}
 
+func (s *MailStoreBackend) Start() error {
+	// Setup a listener for the communication channel with
 	return nil
+}
+
+func (s *MailStoreBackend) OnSubmitQueue(message *smtp.SmtpServerChannelMessage) {
+	log.Debug("Got message to backend...")
+
+	message.Data.QueueId = "123123"
 }

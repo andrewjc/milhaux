@@ -1,7 +1,7 @@
 package imap
 
 import (
-	"github.com/milhaux/common"
+	"github.com/andrewjc/milhaux/common"
 	log "github.com/sirupsen/logrus"
 )
 
