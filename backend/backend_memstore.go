@@ -20,11 +20,15 @@ type MemStoreStorageBackend struct {
 	initMutex sync.Mutex
 }
 
+var _isStartedTVal bool
 func (backend *MemStoreStorageBackend) IsStarted() bool {
+
+	if _isStartedTVal { return true } //avoid unnecessary locking once initialized
+
 	backend.initMutex.Lock()
-	tmp := backend.isReady
+	_isStartedTVal = backend.isReady
 	backend.initMutex.Unlock()
-	return tmp
+	return _isStartedTVal
 }
 
 const MAX_QUEUE_WORKERS = 4

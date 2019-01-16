@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"net"
 )
 
@@ -49,12 +50,15 @@ func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 	for {
 		line, err := rdr.ReadString('\n')
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			log.Errorf("[%s] Error handling smtp connection - ", conn.RemoteAddr().String(), err.Error())
-			return
+			break
 		}
 
 		log.Debugf("[%s] IN: %s", smtpSession.RemoteHostAddr, line)
-		log.Debugf("[%s] - raw input: %s", conn.RemoteAddr().String(), string(line))
+		//log.Debugf("[%s] - raw input: %s", conn.RemoteAddr().String(), string(line))
 
 		commandResponse := s.commandRequestHandler(smtpSession, line)
 
