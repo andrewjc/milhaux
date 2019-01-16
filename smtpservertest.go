@@ -7,11 +7,12 @@ import (
 )
 
 func main() {
-	go spawner()
+	performUnauthenticatedTest()
+	/*go spawner()
 
 	for {
 		select {}
-	}
+	}*/
 }
 
 func spawner() {

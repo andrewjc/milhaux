@@ -2,6 +2,7 @@ package backend
 
 import (
 	"github.com/andrewjc/milhaux/common"
+	"github.com/andrewjc/milhaux/smtp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,7 +12,12 @@ func init() {
 }
 
 type FsStoreStorageBackend struct {
-	config *common.ApplicationConfig
+	config  *common.ApplicationConfig
+	isReady bool
+}
+
+func (backend *FsStoreStorageBackend) IsStarted() bool {
+	return backend.isReady
 }
 
 func (backend *FsStoreStorageBackend) Start() error {
@@ -20,6 +26,6 @@ func (backend *FsStoreStorageBackend) Start() error {
 	return nil
 }
 
-func (backend *FsStoreStorageBackend) QueueSubmit(mailmessage *common.MailMessage) {
-
+func (backend *FsStoreStorageBackend) OnSubmitQueue(message *smtp.SmtpServerChannelMessage) {
+	panic("implement me")
 }

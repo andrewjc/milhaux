@@ -13,7 +13,7 @@ type ApplicationContext struct {
 	Config           common.ApplicationConfig
 	SmtpServer       smtp.SmtpServer
 	ImapServer       imap.Imap4Server
-	MailStoreBackend backend.MailStoreBackend
+	MailStoreBackend backend.MailStoreBackendProvider
 }
 
 func (core *ApplicationContext) Start() {
@@ -21,6 +21,7 @@ func (core *ApplicationContext) Start() {
 	log.Info("Version: ", core.Config.GetApplicationVersion())
 
 	smtpServerChannel := core.SmtpServer.ObtainListenerChannel()
+
 	go core.smtpServerMessageRouter(smtpServerChannel)
 
 	go core.initBackend()
@@ -58,11 +59,16 @@ func (core *ApplicationContext) initBackend() {
 	}
 }
 
-func (core *ApplicationContext) smtpServerMessageRouter(messageChannel chan smtp.SmtpServerChannelMessage) {
+func (core *ApplicationContext) smtpServerMessageRouter(messageChannel chan *smtp.SmtpServerChannelMessage) {
+
 	for {
 		select {
 		case smtpChannelMessage := <-messageChannel:
-			core.MailStoreBackend.OnSubmitQueue(&smtpChannelMessage)
+			if core.MailStoreBackend.IsStarted() == false {
+				log.Error("Warning: Got a message on the smtp channel before the backend is ready.")
+			} else {
+				core.MailStoreBackend.OnSubmitQueue(smtpChannelMessage)
+			}
 		}
 	}
 }

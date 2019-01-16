@@ -24,7 +24,7 @@ func init() {
 	log.Debug("Init mailstore package")
 
 	// Override config values for testing.
-	packageConfig.backend = FILESTORE
+	packageConfig.backend = MEMSTORE
 	packageConfig.available = true
 }
 
@@ -32,19 +32,23 @@ type MailStoreBackend struct {
 	smtpComponentChannel chan common.MailMessage
 }
 
-func NewMailStoreBackend(config *common.ApplicationConfig) MailStoreBackend {
+type MailStoreBackendProvider interface {
+	Start() error
+	IsStarted() bool
+	OnSubmitQueue(message *smtp.SmtpServerChannelMessage)
+}
+
+func NewMailStoreBackend(config *common.ApplicationConfig) MailStoreBackendProvider {
 	log.Debug("Creating a mailstore backend instance...")
 
-	return MailStoreBackend{}
-}
+	switch {
+	case packageConfig.backend == MEMSTORE:
+		return &MemStoreStorageBackend{}
+	case packageConfig.backend == FILESTORE:
+		return &FsStoreStorageBackend{}
+	case packageConfig.backend == DBSTORE:
+		return &DbStoreStorageBackend{}
+	}
 
-func (s *MailStoreBackend) Start() error {
-	// Setup a listener for the communication channel with
 	return nil
-}
-
-func (s *MailStoreBackend) OnSubmitQueue(message *smtp.SmtpServerChannelMessage) {
-	log.Debug("Got message to backend...")
-
-	message.Data.QueueId = "123123"
 }

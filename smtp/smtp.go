@@ -2,6 +2,7 @@ package smtp
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"net"
 
 	"github.com/andrewjc/milhaux/common"
@@ -13,7 +14,7 @@ type SmtpServer interface {
 	handleSmtpConnection(conn net.Conn)
 	closeSmtpConnection(smtpSession *SmtpSession)
 
-	ObtainListenerChannel() chan SmtpServerChannelMessage
+	ObtainListenerChannel() chan *SmtpServerChannelMessage
 }
 
 type ChannelMessageType uint8
@@ -31,16 +32,16 @@ type SmtpServer_impl struct {
 	config *common.ApplicationConfig
 
 	listener net.Listener
-	channel  chan SmtpServerChannelMessage
+	channel  chan *SmtpServerChannelMessage
 }
 
 func NewSmtpServer(config *common.ApplicationConfig) SmtpServer {
 	log.Debug("Creating new smtp server instance...")
-	smtpSvr := &SmtpServer_impl{config, nil, make(chan SmtpServerChannelMessage)}
+	smtpSvr := &SmtpServer_impl{config, nil, make(chan *SmtpServerChannelMessage)}
 	return smtpSvr
 }
 
-func (s *SmtpServer_impl) ObtainListenerChannel() chan SmtpServerChannelMessage {
+func (s *SmtpServer_impl) ObtainListenerChannel() chan *SmtpServerChannelMessage {
 	return s.channel
 }
 
@@ -51,7 +52,10 @@ func (s *SmtpServer_impl) Start() error {
 	listenSpec := fmt.Sprintf("%s:%d", s.config.GetSmtpServerConfig().ListenInterface, s.config.GetSmtpServerConfig().Port)
 	listener, err := net.Listen("tcp4", listenSpec)
 	s.listener = listener
-	defer s.listener.Close()
+	defer func() {
+		s.listener.Close()
+		log.Debug("SMTP server loop terminated")
+	}()
 
 	if err != nil {
 		return fmt.Errorf("%s - %s", listenSpec, err.Error())
@@ -75,10 +79,12 @@ func (s *SmtpServer_impl) Start() error {
 
 func (s *SmtpServer_impl) onSubmitMail(message *common.MailMessage) *common.MailMessage {
 
-	submitQueueMessage := SmtpServerChannelMessage{
+	submitQueueMessage := &SmtpServerChannelMessage{
 		SMTP_CHANNEL_MESSAGE_QUEUE_SUBMIT,
 		message,
 	}
+
+	submitQueueMessage.Data.QueueId = uuid.New().String()
 
 	s.channel <- submitQueueMessage
 
