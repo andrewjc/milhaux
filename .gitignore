@@ -13,6 +13,8 @@
 
 
 # User-specific stuff
+.idea
+.idea/**
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
