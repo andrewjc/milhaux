@@ -6,14 +6,10 @@ import (
 	"net/smtp"
 )
 
-func main() {
+/*func main() {
 	performUnauthenticatedTest()
-	/*go spawner()
-
-	for {
-		select {}
-	}*/
 }
+*/
 
 func spawner() {
 	for {

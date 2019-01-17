@@ -15,13 +15,35 @@ const (
 	END_DATA_COMMAND_SEQUENCE = ".\r\n"
 )
 
+type SmtpCommandProcessor struct {
+}
+
+func NewCommandProcessor() SmtpCommandProcessor {
+	processor := SmtpCommandProcessor{}
+
+	return processor
+}
+
 type CommandResponse struct {
 	action              CommandAction
 	commandStatus       CommandStatus
 	commandResponseText string
 }
 
-func (s *SmtpServer_impl) commandRequestHandler(smtpSession *SmtpSession, commandLine string) *CommandResponse {
+func (response *CommandResponse) actionToString() string {
+	if response.action == COMMANDACTION_CONTINUE {
+		return "CONTINUE"
+	}
+	if response.action == COMMANDACTION_EXIT {
+		return "EXIT"
+	}
+	if response.action == COMMANDACTION_NONE {
+		return "NONE"
+	}
+	return "UNSPECIFIED"
+}
+
+func (s *SmtpCommandProcessor) HandleCommand(smtpSession *SmtpSession, commandLine string) *CommandResponse {
 
 	command := getCommandArgPair(commandLine)
 
@@ -34,11 +56,11 @@ func (s *SmtpServer_impl) commandRequestHandler(smtpSession *SmtpSession, comman
 	}
 
 	switch {
-	case smtpSession.SmtpState == SMTP_SERVER_STATE_ESTABLISH:
+	case smtpSession.smtpState == SMTP_SERVER_STATE_ESTABLISH:
 		return s.smtpCommandEstablish(smtpSession, command)
-	case smtpSession.StateData[SESSION_DATA_KEY_CLIENT_ID] != nil:
+	case smtpSession.stateData[SESSION_DATA_KEY_CLIENT_ID] != nil:
 
-		if smtpSession.SmtpState == SMTP_SERVER_STATE_DATA {
+		if smtpSession.smtpState == SMTP_SERVER_STATE_DATA {
 			return s.smtpCommandBufferData(smtpSession, commandLine)
 		} else {
 			switch {
@@ -70,7 +92,7 @@ func getCommandArgPair(rawString string) commandArgPair {
 
 		commandStr := temp[0:strings.Index(temp, " ")]
 		argStr := temp[len(commandStr):len(temp)]
-		return commandArgPair{strings.TrimSpace(commandStr), strings.TrimSpace(argStr)}
+		return commandArgPair{strings.ToUpper(strings.TrimSpace(commandStr)), strings.TrimSpace(argStr)}
 	} else {
 		return commandArgPair{temp, ""}
 	}

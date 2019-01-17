@@ -17,16 +17,17 @@ const (
 )
 
 type SmtpSession struct {
-	SmtpServerInstance SmtpServer_impl
-	SmtpState          SmtpSessionState
-	Writer             *bufio.Writer
-	Connection         *net.Conn
-	RemoteHostAddr     string
-	StateData          map[string]interface{}
-	ReceiveDataBuffer  *bytes.Buffer
+	smtpServerInstance SmtpServer_impl
+	smtpState          SmtpSessionState
+	writer             *bufio.Writer
+	connection         *net.Conn
+	remoteHostAddr     string
+	stateData          map[string]interface{}
+	receiveDataBuffer  *bytes.Buffer
+	smtpMessageChannel chan *SmtpServerChannelMessage
 }
 
-func NewSmtpSession(serverInstance SmtpServer_impl, conn net.Conn) *SmtpSession {
+func NewSmtpSession(serverInstance SmtpServer_impl, conn net.Conn, messageChannel chan *SmtpServerChannelMessage) *SmtpSession {
 	session := &SmtpSession{
 		serverInstance,
 		SMTP_SERVER_STATE_ESTABLISH,
@@ -35,15 +36,18 @@ func NewSmtpSession(serverInstance SmtpServer_impl, conn net.Conn) *SmtpSession 
 		conn.RemoteAddr().String(),
 		make(map[string]interface{}),
 		bytes.NewBufferString(""),
+		messageChannel,
 	}
 
-	return session.beginSession()
+	return session
 }
 
 func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 	log.Infof("[%s] Accepted smtp connection", conn.RemoteAddr().String())
-	smtpSession := NewSmtpSession(*s, conn)
+	smtpSession := NewSmtpSession(*s, conn, s.ObtainListenerChannel())
 	defer s.closeSmtpConnection(smtpSession)
+
+	smtpSession.beginSession()
 
 	rdr := bufio.NewReader(conn)
 
@@ -53,14 +57,14 @@ func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 			if err == io.EOF {
 				break
 			}
-			log.Errorf("[%s] Error handling smtp connection - ", conn.RemoteAddr().String(), err.Error())
+			log.Errorf("[%s] Error handling smtp connection - %s", conn.RemoteAddr().String(), err.Error())
 			break
 		}
 
-		log.Debugf("[%s] IN: %s", smtpSession.RemoteHostAddr, line)
+		log.Debugf("[%s] IN: %s", smtpSession.remoteHostAddr, line)
 		//log.Debugf("[%s] - raw input: %s", conn.RemoteAddr().String(), string(line))
 
-		commandResponse := s.commandRequestHandler(smtpSession, line)
+		commandResponse := s.commandProcessor.HandleCommand(smtpSession, line)
 
 		switch {
 		case commandResponse.action == COMMANDACTION_CONTINUE:
@@ -73,29 +77,36 @@ func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 	}
 }
 
-func (s *SmtpServer_impl) smtpCommandDone(smtpSession *SmtpSession, commandLine string) *CommandResponse {
-	return &CommandResponse{COMMANDACTION_EXIT, SMTP_COMMAND_STATUS_SERVICE_CLOSING_CHANNEL, "Bye"}
-}
-
 func (s *SmtpServer_impl) closeSmtpConnection(smtpSession *SmtpSession) {
-	log.Infof("[%s] Connection closed by remote host (user command)", smtpSession.RemoteHostAddr)
-	(*smtpSession.Connection).Close()
+	log.Infof("[%s] Connection closed by remote host (user command)", smtpSession.remoteHostAddr)
+	err := (*smtpSession.connection).Close()
+	if err != nil {
+		log.Warnf("[%s] Error occurred while closing smtp connection: %s", smtpSession.remoteHostAddr, err.Error())
+	}
 }
 
-func (s *SmtpSession) writeOutputLine(outputString string) {
-	s.Writer.WriteString(outputString)
-	s.Writer.WriteString("\r\n")
-	s.Writer.Flush()
-	log.Debugf("[%s] OUT: %s", s.RemoteHostAddr, outputString)
+func (s *SmtpSession) writeOutputLine(outputString string) error {
+	return s.writeOutput(fmt.Sprintf("%s\n", outputString))
 }
 
-func (s *SmtpSession) writeOutput(outputString string) {
-	s.Writer.WriteString(outputString)
-	s.Writer.Flush()
-	log.Debugf("[%s] OUT: %s", s.RemoteHostAddr, outputString)
+func (s *SmtpSession) writeOutput(outputString string) error {
+	_, err := s.writer.WriteString(outputString)
+	if err != nil {
+		log.Debugf("[%s] writeOutput error: %s", s.remoteHostAddr, err.Error())
+		return err
+	}
+
+	err = s.writer.Flush()
+	if err != nil {
+		log.Debugf("[%s] writeOutput flush error: %s", s.remoteHostAddr, err.Error())
+		return err
+	}
+
+	log.Debugf("[%s] OUT: %s", s.remoteHostAddr, outputString)
+
+	return nil
 }
 
-func (s *SmtpSession) beginSession() *SmtpSession {
-	s.writeOutput(fmt.Sprintf("%d %s ESMTP %s\r\n", SMTP_COMMAND_STATUS_SERVICE_READY, s.SmtpServerInstance.config.GetSmtpServerConfig().Hostname, SMTP_SERVER_BUILD_STRING))
-	return s
+func (s *SmtpSession) beginSession() error {
+	return s.writeOutput(fmt.Sprintf("%d %s ESMTP %s\r\n", SMTP_COMMAND_STATUS_SERVICE_READY, s.smtpServerInstance.config.GetSmtpServerConfig().Hostname, SMTP_SERVER_BUILD_STRING))
 }

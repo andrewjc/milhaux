@@ -2,7 +2,6 @@ package smtp
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"net"
 
 	"github.com/andrewjc/milhaux/common"
@@ -29,15 +28,16 @@ type SmtpServerChannelMessage struct {
 }
 
 type SmtpServer_impl struct {
-	config *common.ApplicationConfig
+	config           *common.ApplicationConfig
+	channel          chan *SmtpServerChannelMessage
+	commandProcessor SmtpCommandProcessor
 
 	listener net.Listener
-	channel  chan *SmtpServerChannelMessage
 }
 
 func NewSmtpServer(config *common.ApplicationConfig) SmtpServer {
 	log.Debug("Creating new smtp server instance...")
-	smtpSvr := &SmtpServer_impl{config, nil, make(chan *SmtpServerChannelMessage)}
+	smtpSvr := &SmtpServer_impl{config, make(chan *SmtpServerChannelMessage), NewCommandProcessor(), nil}
 	return smtpSvr
 }
 
@@ -67,7 +67,7 @@ func (s *SmtpServer_impl) Start() error {
 		conn, err := listener.Accept()
 		if err != nil {
 
-			log.Error("error accepting client %s", err.Error())
+			log.Errorf("error accepting client %s", err.Error())
 			continue
 		}
 
@@ -75,18 +75,4 @@ func (s *SmtpServer_impl) Start() error {
 	}
 
 	return nil
-}
-
-func (s *SmtpServer_impl) onSubmitMail(message *common.MailMessage) *common.MailMessage {
-
-	submitQueueMessage := &SmtpServerChannelMessage{
-		SMTP_CHANNEL_MESSAGE_QUEUE_SUBMIT,
-		message,
-	}
-
-	submitQueueMessage.Data.QueueId = uuid.New().String()
-
-	s.channel <- submitQueueMessage
-
-	return message
 }
