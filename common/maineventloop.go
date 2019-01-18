@@ -15,5 +15,8 @@ var (
 )
 
 func GetMainMessageLoop() chan MainEventMessage {
+	if eventLoopChannel == nil {
+		eventLoopChannel = make(chan MainEventMessage)
+	}
 	return eventLoopChannel
 }

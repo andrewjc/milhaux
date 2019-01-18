@@ -3,7 +3,6 @@ package backend
 import (
 	linkedlist "container/list"
 	"github.com/andrewjc/milhaux/common"
-	. "github.com/andrewjc/milhaux/smtp"
 	log "github.com/sirupsen/logrus"
 	"sync"
 )
@@ -21,39 +20,32 @@ type MemStoreStorageBackend struct {
 }
 
 var _isStartedTVal bool
-func (backend *MemStoreStorageBackend) IsStarted() bool {
 
-	if _isStartedTVal { return true } //avoid unnecessary locking once initialized
+func (s *MemStoreStorageBackend) IsStarted() bool {
 
-	backend.initMutex.Lock()
-	_isStartedTVal = backend.isReady
-	backend.initMutex.Unlock()
+	if _isStartedTVal {
+		return true
+	} //avoid unnecessary locking once initialized
+
+	s.initMutex.Lock()
+	_isStartedTVal = s.isReady
+	s.initMutex.Unlock()
 	return _isStartedTVal
 }
 
-const MAX_QUEUE_WORKERS = 4
-
-func (backend *MemStoreStorageBackend) Start() error {
+func (s *MemStoreStorageBackend) Start() error {
 	log.Info("Starting memory backed mailstore backend instance...")
 
-	backend.initMutex.Lock()
-	backend.queue = linkedlist.New()
-	backend.isReady = true
-	backend.initMutex.Unlock()
-
-	for i := 0; i < MAX_QUEUE_WORKERS; i++ {
-		go backend.QueueWorker()
-	}
+	s.initMutex.Lock()
+	s.queue = linkedlist.New()
+	s.isReady = true
+	s.initMutex.Unlock()
 
 	return nil
 }
 
-func (backend *MemStoreStorageBackend) OnSubmitQueue(message *SmtpServerChannelMessage) {
-	backend.queue.PushBack(message)
-}
-
-func (backend *MemStoreStorageBackend) QueueWorker() {
-	for {
-
-	}
+func (s *MemStoreStorageBackend) Store(message *common.MailMessage) error {
+	log.Infof("Added message to memstore. There are now %v items in the store.", s.queue.Len())
+	s.queue.PushBack(message)
+	return nil
 }

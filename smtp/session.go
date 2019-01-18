@@ -24,10 +24,10 @@ type SmtpSession struct {
 	remoteHostAddr     string
 	stateData          map[string]interface{}
 	receiveDataBuffer  *bytes.Buffer
-	smtpMessageChannel chan *SmtpServerChannelMessage
+	smtpMessageChannel chan SmtpServerChannelMessage
 }
 
-func NewSmtpSession(serverInstance SmtpServer_impl, conn net.Conn, messageChannel chan *SmtpServerChannelMessage) *SmtpSession {
+func NewSmtpSession(serverInstance SmtpServer_impl, conn net.Conn, messageChannel chan SmtpServerChannelMessage) *SmtpSession {
 	session := &SmtpSession{
 		serverInstance,
 		SMTP_SESSION_STATE_PREAUTH,

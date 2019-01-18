@@ -95,7 +95,7 @@ func (s *SmtpCommandProcessor) smtpCommandBufferData(smtpSession *SmtpSession, c
 }
 
 func (s *SmtpCommandProcessor) onSubmitMail(session *SmtpSession, message *common.MailMessage) {
-	submitQueueMessage := &SmtpServerChannelMessage{
+	submitQueueMessage := SmtpServerChannelMessage{
 		SMTP_CHANNEL_MESSAGE_QUEUE_SUBMIT,
 		message,
 	}

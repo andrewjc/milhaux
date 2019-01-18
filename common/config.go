@@ -1,5 +1,7 @@
 package common
 
+import "runtime"
+
 var appConfigInstance = CreateDefaultAppConfig()
 
 func init() {
@@ -17,6 +19,8 @@ type SmtpServerConfig struct {
 	ListenInterface                         string
 	SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION  bool
 	SMTP_OPTION_ALLOW_BARE_LINE_FEED_SUBMIT bool
+	SMTP_OPTION_MAX_QUEUE_BUFFERED_ITEMS    int
+	SMTP_OPTION_MAX_QUEUE_WORKERS           int
 }
 
 func NewApplicationConfig() *ApplicationConfig {
@@ -34,6 +38,13 @@ func CreateDefaultSmtpServerConfig() *SmtpServerConfig {
 	c.Port = 25
 	c.ListenInterface = "0.0.0.0"
 	c.Hostname = "desktop"
+
+	// The number of smtp queue workers...
+	c.SMTP_OPTION_MAX_QUEUE_WORKERS = runtime.NumCPU()
+
+	// The number of buffered items allowed in the transport buffer before smtp workers are blocked
+	c.SMTP_OPTION_MAX_QUEUE_BUFFERED_ITEMS = 16
+
 	return c
 }
 

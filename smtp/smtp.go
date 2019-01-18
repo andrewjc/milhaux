@@ -13,7 +13,7 @@ type SmtpServer interface {
 	handleSmtpConnection(conn net.Conn)
 	closeSmtpConnection(smtpSession *SmtpSession)
 
-	ObtainListenerChannel() chan *SmtpServerChannelMessage
+	ObtainListenerChannel() chan SmtpServerChannelMessage
 }
 
 type ChannelMessageType uint8
@@ -29,7 +29,7 @@ type SmtpServerChannelMessage struct {
 
 type SmtpServer_impl struct {
 	config           *common.ApplicationConfig
-	channel          chan *SmtpServerChannelMessage
+	channel          chan SmtpServerChannelMessage
 	commandProcessor SmtpCommandProcessor
 
 	listener net.Listener
@@ -37,11 +37,11 @@ type SmtpServer_impl struct {
 
 func NewSmtpServer(config *common.ApplicationConfig) SmtpServer {
 	log.Debug("Creating new smtp server instance...")
-	smtpSvr := &SmtpServer_impl{config, make(chan *SmtpServerChannelMessage), NewCommandProcessor(), nil}
+	smtpSvr := &SmtpServer_impl{config, make(chan SmtpServerChannelMessage, config.GetSmtpServerConfig().SMTP_OPTION_MAX_QUEUE_BUFFERED_ITEMS), NewCommandProcessor(), nil}
 	return smtpSvr
 }
 
-func (s *SmtpServer_impl) ObtainListenerChannel() chan *SmtpServerChannelMessage {
+func (s *SmtpServer_impl) ObtainListenerChannel() chan SmtpServerChannelMessage {
 	return s.channel
 }
 
