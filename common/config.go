@@ -6,15 +6,17 @@ func init() {
 }
 
 type ApplicationConfig struct {
+	smtpServerConfig *SmtpServerConfig
 	version          string
 	loglevel         uint32
-	smtpServerConfig SmtpServerConfig
 }
 
 type SmtpServerConfig struct {
-	Port            uint32
-	Hostname        string
-	ListenInterface string
+	Port                                    uint32
+	Hostname                                string
+	ListenInterface                         string
+	SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION  bool
+	SMTP_OPTION_ALLOW_BARE_LINE_FEED_SUBMIT bool
 }
 
 func NewApplicationConfig() *ApplicationConfig {
@@ -23,7 +25,7 @@ func NewApplicationConfig() *ApplicationConfig {
 
 func CreateDefaultAppConfig() *ApplicationConfig {
 	c := NewApplicationConfig()
-	c.smtpServerConfig = *CreateDefaultSmtpServerConfig()
+	c.smtpServerConfig = CreateDefaultSmtpServerConfig()
 	return c.PopulateDefault()
 }
 
@@ -51,6 +53,6 @@ func (config *ApplicationConfig) GetApplicationVersion() string {
 func (config *ApplicationConfig) GetLogLevel() uint32 {
 	return config.loglevel
 }
-func (config *ApplicationConfig) GetSmtpServerConfig() SmtpServerConfig {
+func (config *ApplicationConfig) GetSmtpServerConfig() *SmtpServerConfig {
 	return config.smtpServerConfig
 }

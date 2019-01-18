@@ -30,7 +30,7 @@ type SmtpSession struct {
 func NewSmtpSession(serverInstance SmtpServer_impl, conn net.Conn, messageChannel chan *SmtpServerChannelMessage) *SmtpSession {
 	session := &SmtpSession{
 		serverInstance,
-		SMTP_SERVER_STATE_ESTABLISH,
+		SMTP_SESSION_STATE_PREAUTH,
 		bufio.NewWriter(conn),
 		&conn,
 		conn.RemoteAddr().String(),
@@ -62,9 +62,9 @@ func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 		}
 
 		log.Debugf("[%s] IN: %s", smtpSession.remoteHostAddr, line)
-		//log.Debugf("[%s] - raw input: %s", conn.RemoteAddr().String(), string(line))
 
-		commandResponse := s.commandProcessor.HandleCommand(smtpSession, line)
+		var commandResponse CommandResponse
+		commandResponse = s.commandProcessor.HandleCommand(smtpSession, line)
 
 		switch {
 		case commandResponse.action == COMMANDACTION_CONTINUE:
@@ -74,6 +74,7 @@ func (s *SmtpServer_impl) handleSmtpConnection(conn net.Conn) {
 			smtpSession.writeOutputLine(fmt.Sprintf("%d %s", commandResponse.commandStatus, commandResponse.commandResponseText))
 			break
 		}
+
 	}
 }
 

@@ -5,19 +5,19 @@ import (
 	"testing"
 )
 
-func expectSmtpSessionAction(response *CommandResponse, expectedSmtpSessionAction CommandAction, t *testing.T) {
+func expectSmtpSessionAction(response CommandResponse, expectedSmtpSessionAction CommandAction, t *testing.T) {
 	if response.action != expectedSmtpSessionAction {
-		t.Errorf("Expected command %v. Got: %v %v", commandActionToString(expectedSmtpSessionAction), response.actionToString(), response.commandStatus)
+		t.Errorf("Expected %v - got %v", commandActionToString(expectedSmtpSessionAction), response.action.String())
 	}
 }
 
-func expectSmtpStatusCode(response *CommandResponse, expectedSmtpCommandStatusCode CommandStatus, t *testing.T) {
+func expectSmtpStatusCode(response CommandResponse, expectedSmtpCommandStatusCode SmtpCommandStatus, t *testing.T) {
 	if response.commandStatus != expectedSmtpCommandStatusCode {
-		t.Errorf("Expected %v ok", expectedSmtpCommandStatusCode)
+		t.Errorf("Expected %v - got %v", expectedSmtpCommandStatusCode, response.commandStatus)
 	}
 }
 
-func expectSmtpStatusText(response *CommandResponse, expectedSmtpCommandStatusText string, t *testing.T) {
+func expectSmtpStatusText(response CommandResponse, expectedSmtpCommandStatusText string, t *testing.T) {
 	if response.commandResponseText != expectedSmtpCommandStatusText {
 		t.Errorf("Expected different command response text '%v' - got '%v'", expectedSmtpCommandStatusText, response.commandResponseText)
 	}
@@ -26,7 +26,7 @@ func expectSmtpStatusText(response *CommandResponse, expectedSmtpCommandStatusTe
 func commandActionToString(action CommandAction) string {
 	s := CommandResponse{}
 	s.action = action
-	return s.actionToString()
+	return s.action.String()
 }
 
 func getTestConnection() (client, server net.Conn) {
