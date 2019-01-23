@@ -1,0 +1,14 @@
+service MessageStore {
+    rpc SubmitMessage (MessageSubmitRequest) returns (MessageSubmitResponse) {}
+}
+
+message MessageSubmitRequest {
+    required string To = 1;
+    required string From = 2;
+    required string Data = 3;
+    required string QueueId = 4;
+}
+
+message MessageSubmitResponse {
+
+}

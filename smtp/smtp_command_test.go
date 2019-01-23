@@ -143,7 +143,7 @@ func TestDisallowBareLineFeedAfterData(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = false
 

@@ -102,5 +102,10 @@ func (s *SmtpCommandProcessor) onSubmitMail(session *SmtpSession, message *commo
 
 	submitQueueMessage.Data.QueueId = uuid.New().String()
 
-	session.smtpMessageChannel <- submitQueueMessage
+	backendInterface := session.smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_BACKEND_INTERFACE
+	if backendInterface == "embedded" {
+		session.smtpMessageChannel <- submitQueueMessage
+	} else if strings.HasPrefix(strings.ToLower(backendInterface), "http://") {
+		// specifying a backend endpoint
+	}
 }

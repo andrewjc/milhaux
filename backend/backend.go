@@ -7,13 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var packageConfig = DefaultBackendConfig{}
-
-type DefaultBackendConfig struct {
-	backend   int8
-	available bool
-}
-
 const (
 	MEMSTORE = iota
 	FILESTORE
@@ -24,9 +17,6 @@ const (
 func init() {
 	log.Debug("Init mailstore package")
 
-	// Override config values for testing.
-	packageConfig.backend = MEMSTORE
-	packageConfig.available = true
 }
 
 type MailStoreStorageProvider interface {
@@ -51,6 +41,12 @@ func NewMailStoreBackend(config *common.ApplicationConfig) *MailStoreBackend {
 	backend.workerPool = make(chan chan smtp.SmtpServerChannelMessage, config.GetSmtpServerConfig().SMTP_OPTION_MAX_QUEUE_WORKERS)
 
 	backend.storageProvider = &MemStoreStorageBackend{}
+
+	if config.GetBackendConfig().ListenInterface == "embedded" {
+
+	} else {
+		msgSvr := NewMess
+	}
 
 	/*switch {
 	case packageConfig.backend == MEMSTORE:

@@ -24,7 +24,9 @@ func (core *ApplicationContext) Start() {
 
 	go core.initBackend(smtpServerChannel)
 
-	go core.initSmtpServer()
+	if core.Config.GetSmtpServerConfig().Enabled {
+		go core.initSmtpServer()
+	}
 
 	core.beginMainMessageLoop(common.GetMainMessageLoop())
 }
