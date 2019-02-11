@@ -7,8 +7,6 @@ import (
 	"github.com/andrewjc/milhaux/common"
 	"github.com/andrewjc/milhaux/core"
 	log "github.com/sirupsen/logrus"
-
-	"flag"
 )
 
 func main() {
@@ -23,13 +21,13 @@ func main() {
 
 	serverCore := core.NewApplicationContext(appConfig)
 
-	if *flag.Bool("backend_only", false, "a bool") {
-		serverCore.Config.GetSmtpServerConfig().Enabled = false
-		serverCore.Config.GetImap4ServerConfig().Enabled = false
+	/*	if *flag.Bool("backend_only", false, "a bool") {
+			serverCore.Config.GetSmtpServerConfig().Enabled = false
+			serverCore.Config.GetImap4ServerConfig().Enabled = false
 
-		serverCore.Config.GetBackendConfig().ListeningInterface
-	}
-
+			serverCore.Config.GetBackendConfig().ListeningInterface
+		}
+	*/
 	serverCore.Start()
 
 }

@@ -28,6 +28,10 @@ func (core *ApplicationContext) Start() {
 		go core.initSmtpServer()
 	}
 
+	if core.Config.GetImap4ServerConfig().Enabled {
+		go core.initImap4Server()
+	}
+
 	core.beginMainMessageLoop(common.GetMainMessageLoop())
 }
 
@@ -48,6 +52,13 @@ func (core *ApplicationContext) beginMainMessageLoop(messageChannel chan common.
 func (core *ApplicationContext) initSmtpServer() {
 	if status := core.SmtpServer.Start(); status != nil {
 		log.Error("Error starting smtp server: ", status.Error())
+		return
+	}
+}
+
+func (core *ApplicationContext) initImap4Server() {
+	if status := core.ImapServer.Start(); status != nil {
+		log.Error("Error starting imap4 server: ", status.Error())
 		return
 	}
 }

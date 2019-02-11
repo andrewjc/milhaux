@@ -75,7 +75,8 @@ func (s SmtpCommandStatus) String() string {
 type SmtpCommandVerb string
 
 const (
-	SMTP_COMMAND_MAIL = SmtpCommandVerb("MAIL")
+	SMTP_COMMAND_MAIL = SmtpCommandVerb("CAPABILITY")
+
 	SMTP_COMMAND_RCPT = SmtpCommandVerb("RCPT")
 	SMTP_COMMAND_DATA = SmtpCommandVerb("DATA")
 	SMTP_COMMAND_DONE = SmtpCommandVerb("QUIT")

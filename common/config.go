@@ -58,6 +58,7 @@ func CreateDefaultSmtpServerConfig() *SmtpServerConfig {
 	c.Port = 25
 	c.ListenInterface = "0.0.0.0"
 	c.Hostname = "desktop"
+	c.Enabled = true
 
 	// The number of smtp queue workers...
 	c.SMTP_OPTION_MAX_QUEUE_WORKERS = 4
@@ -73,6 +74,7 @@ func CreateDefaultImap4ServerConfig() *Imap4ServerConfig {
 	c.Port = 143
 	c.ListenInterface = "0.0.0.0"
 	c.Hostname = "desktop"
+	c.Enabled = true
 
 	// The number of smtp queue workers...
 	c.SMTP_OPTION_MAX_QUEUE_WORKERS = 4

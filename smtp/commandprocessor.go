@@ -49,10 +49,6 @@ func (s *SmtpCommandProcessor) HandleCommand(smtpSession *SmtpSession, commandLi
 
 	command := getCommandArgPair(commandLine)
 
-	if command.commandStr == SMTP_COMMAND_DONE {
-		return s.smtpCommandDone(smtpSession, commandLine)
-	}
-
 	if strings.TrimSpace(string(command.commandStr)) == "EXIT" {
 		return CommandResponse{COMMANDACTION_EXIT, SMTP_COMMAND_STATUS_SERVICE_READY, "BYE"}
 	}

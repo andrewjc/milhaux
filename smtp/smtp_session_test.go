@@ -9,7 +9,7 @@ import (
 func TestConnectingToServerPresentsWelcomeMessage(t *testing.T) {
 	pegomock.RegisterMockTestingT(t)
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 
 	clientConn, _ := getTestConnection()

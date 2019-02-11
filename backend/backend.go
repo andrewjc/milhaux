@@ -42,12 +42,6 @@ func NewMailStoreBackend(config *common.ApplicationConfig) *MailStoreBackend {
 
 	backend.storageProvider = &MemStoreStorageBackend{}
 
-	if config.GetBackendConfig().ListenInterface == "embedded" {
-
-	} else {
-		msgSvr := NewMess
-	}
-
 	/*switch {
 	case packageConfig.backend == MEMSTORE:
 		backend.storageProvider = &MemStoreStorageBackend{}
