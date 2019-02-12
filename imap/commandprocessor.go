@@ -60,10 +60,17 @@ func (s *ImapCommandProcessor) HandleCommand(imapSession *ImapSession, commandLi
 	}
 
 	// Commands that are only allowed before auth is performed
-	if imapSession.smtpState == IMAP_SESSION_STATE_PREAUTH {
+	if imapSession.sessionState == IMAP_SESSION_STATE_PREAUTH {
 		switch {
 		case command.commandStr == IMAP_COMMAND_LOGIN:
 			return s.imapCommandLogin(imapSession, command)
+		}
+	} else if imapSession.sessionState == IMAP_SESSION_STATE_AUTHOK {
+		// We have a valid session
+
+		// Are they commands handled by the storage driver?
+		if s.isImapStorageDriverCommand(imapSession, command) {
+			return s.imapStorageDriverCommandHandler(imapSession, command)
 		}
 	}
 

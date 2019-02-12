@@ -57,7 +57,7 @@ func (core *ApplicationContext) initSmtpServer() {
 }
 
 func (core *ApplicationContext) initImap4Server() {
-	if status := core.ImapServer.Start(); status != nil {
+	if status := core.ImapServer.Start(core.MailStoreBackend.GetStorageConnector()); status != nil {
 		log.Error("Error starting imap4 server: ", status.Error())
 		return
 	}
@@ -79,6 +79,5 @@ func NewApplicationContext(config *common.ApplicationConfig) *ApplicationContext
 	sc.SmtpServer = smtp.NewSmtpServer(config)
 	sc.ImapServer = imap.NewIMap4Server(config)
 	sc.MailStoreBackend = backend.NewMailStoreBackend(config)
-
 	return sc
 }

@@ -26,6 +26,9 @@ type MailStoreStorageProvider interface {
 }
 
 type MailStoreBackend struct {
+	storageConnector common.StorageConnector
+	commandProcessor *BackendCommandProcessor
+
 	storageProvider MailStoreStorageProvider
 
 	messageQueue chan smtp.SmtpServerChannelMessage
@@ -41,6 +44,14 @@ func NewMailStoreBackend(config *common.ApplicationConfig) *MailStoreBackend {
 	backend.workerPool = make(chan chan smtp.SmtpServerChannelMessage, config.GetSmtpServerConfig().SMTP_OPTION_MAX_QUEUE_WORKERS)
 
 	backend.storageProvider = &MemStoreStorageBackend{}
+
+	backend.commandProcessor = &BackendCommandProcessor{}
+
+	// If we're compiled in monolithic mode, use an in-process storage connector that assumes
+	// that all components are running in the same process space.
+	if config.GetBackendConfig().ListenInterface == "embedded" {
+		backend.storageConnector = &InMemoryStorageConnector{*backend}
+	}
 
 	/*switch {
 	case packageConfig.backend == MEMSTORE:
@@ -102,6 +113,10 @@ func (backend *MailStoreBackend) dispatch() {
 			}(job)
 		}
 	}
+}
+
+func (backend *MailStoreBackend) GetStorageConnector() common.StorageConnector {
+	return backend.storageConnector
 }
 
 func NewQueueWorker(backend *MailStoreBackend) *QueueWorker {

@@ -18,8 +18,8 @@ const (
 )
 
 type ImapSession struct {
-	smtpServerInstance Imap4Server_Impl
-	smtpState          ImapSessionState
+	imapServerInstance Imap4Server_Impl
+	sessionState       ImapSessionState
 	writer             *bufio.Writer
 	connection         *net.Conn
 	remoteHostAddr     string
