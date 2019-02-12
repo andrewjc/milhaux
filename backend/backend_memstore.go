@@ -17,6 +17,7 @@ type MemStoreStorageBackend struct {
 	queue     *linkedlist.List
 	isReady   bool
 	initMutex sync.Mutex
+	mailboxes []Mailbox
 }
 
 var _isStartedTVal bool
@@ -48,4 +49,8 @@ func (s *MemStoreStorageBackend) Store(message *common.MailMessage) error {
 	log.Infof("Added message to memstore. There are now %v items in the store.", s.queue.Len())
 	s.queue.PushBack(message)
 	return nil
+}
+
+func (s *MemStoreStorageBackend) Mailboxes() []Mailbox {
+	return s.mailboxes
 }

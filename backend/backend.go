@@ -19,10 +19,15 @@ func init() {
 
 }
 
+type Mailbox interface {
+	Name() string
+}
+
 type MailStoreStorageProvider interface {
 	Start() error
 	IsStarted() bool
 	Store(message *common.MailMessage) error
+	Mailboxes() []Mailbox
 }
 
 type MailStoreBackend struct {

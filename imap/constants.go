@@ -52,6 +52,8 @@ const (
 	IMAP_COMMAND_NOOP       = ImapCommandVerb("NOOP")
 	IMAP_COMMAND_LOGOUT     = ImapCommandVerb("LOGOUT")
 	IMAP_COMMAND_LOGIN      = ImapCommandVerb("LOGIN")
+	IMAP_COMMAND_LIST       = ImapCommandVerb("LIST")
+	IMAP_COMMAND_RENAME     = ImapCommandVerb("RENAME")
 )
 
 func (s ImapCommandVerb) String() string {
@@ -62,6 +64,10 @@ func (s ImapCommandVerb) String() string {
 		return "NOOP"
 	case IMAP_COMMAND_LOGOUT:
 		return "LOGOUT"
+	case IMAP_COMMAND_LIST:
+		return "LIST"
+	case IMAP_COMMAND_RENAME:
+		return "RENAME"
 	}
 	return "Unknown"
 }

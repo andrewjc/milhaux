@@ -9,8 +9,8 @@ type StorageConnector interface {
 type StorageMessageType string
 
 const (
-	StorageMessageTypeQuery    = StorageMessageType("QUERY")
-	StorageMessageTypeResponse = StorageMessageType("RESPONSE")
+	StorageMessageTypeQuery           = StorageMessageType("QUERY")
+	StorageMessageTypeSuccessResponse = StorageMessageType("RESPONSE")
 )
 
 type StorageMessageCommand string
@@ -18,19 +18,22 @@ type StorageMessageCommand string
 const (
 	StorageMessageCommandNone    = StorageMessageCommand("NONE")
 	StorageMessageCommandIsValid = StorageMessageCommand("ISVALID")
+	StorageMessageCommandList    = StorageMessageCommand("LIST")
+	StorageMessageCommandRename  = StorageMessageCommand("RENAME")
+	StorageMessageCommandCreate  = StorageMessageCommand("CREATE")
 )
 
 type StorageMessage interface {
 	MsgType() StorageMessageType
 	MsgCommand() StorageMessageCommand
-	MsgData() string
+	MsgData() interface{}
 	ToJson() string
 }
 
 type storageMessageImpl struct {
 	msgType    StorageMessageType
 	msgCommand StorageMessageCommand
-	msgData    string
+	msgData    interface{}
 }
 
 func (m *storageMessageImpl) MsgType() StorageMessageType {
@@ -41,7 +44,7 @@ func (m *storageMessageImpl) MsgCommand() StorageMessageCommand {
 	return m.msgCommand
 }
 
-func (m *storageMessageImpl) MsgData() string {
+func (m *storageMessageImpl) MsgData() interface{} {
 	return m.msgData
 }
 
@@ -66,8 +69,16 @@ func (s *StorageMessageBuilder) IsValidCommandMessage(command string) *StorageMe
 	return s
 }
 
-func (s *StorageMessageBuilder) ResponseMessage(msgData string) *StorageMessageBuilder {
-	s.msgType = StorageMessageTypeResponse
+func (s *StorageMessageBuilder) StorageCommandMessage(command string, args string) *StorageMessageBuilder {
+	s.msgType = StorageMessageTypeQuery
+	s.msgCommand = StorageMessageCommand(command)
+	s.msgData = args
+
+	return s
+}
+
+func (s *StorageMessageBuilder) SuccessResponseMessage(msgData interface{}) *StorageMessageBuilder {
+	s.msgType = StorageMessageTypeSuccessResponse
 	s.msgCommand = StorageMessageCommandNone
 	s.msgData = msgData
 

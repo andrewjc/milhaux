@@ -85,7 +85,7 @@ func (s *ImapCommandProcessor) isImapStorageDriverCommand(imapSession *ImapSessi
 
 	responseMessage, _ := storageConnector.PerformSendReceive(message)
 
-	if responseMessage.MsgType() == common.StorageMessageTypeResponse {
+	if responseMessage.MsgType() == common.StorageMessageTypeSuccessResponse {
 		return responseMessage.MsgData() == "true"
 	}
 
@@ -97,11 +97,15 @@ func (s *ImapCommandProcessor) isImapStorageDriverCommand(imapSession *ImapSessi
 func (s *ImapCommandProcessor) imapStorageDriverCommandHandler(imapSession *ImapSession, commandPair commandArgPair) CommandResponse {
 	storageConnector := imapSession.imapServerInstance.storageConnector
 
-	message := (&common.StorageMessageBuilder{}).IsValidCommandMessage(commandPair.commandStr.String()).Build()
+	message := (&common.StorageMessageBuilder{}).StorageCommandMessage(commandPair.commandStr.String(), commandPair.args).Build()
 
-	responseMessage, _ := storageConnector.PerformSendReceive(message)
+	responseMessage, err := storageConnector.PerformSendReceive(message)
 
-	if responseMessage.MsgType() == common.StorageMessageTypeResponse {
+	if err != nil {
+		return CommandResponse{commandStatus: IMAP_COMMAND_STATUS_COMMAND_NOT_IMPLEMENTED, action: COMMANDACTION_CONTINUE, commandResponseLines: []string{fmt.Sprintf("Imap storage driver received an unhandled connector response: %s", err.Error())}}
+	}
+
+	if responseMessage.MsgType() == common.StorageMessageTypeSuccessResponse {
 		// TODO: The response message from the backend should indicate status and status text...
 
 		// for example, if we get RENAME "Inbox/Demo12" "Inbox/Demo1" from the client
@@ -112,7 +116,15 @@ func (s *ImapCommandProcessor) imapStorageDriverCommandHandler(imapSession *Imap
 
 		status := IMAP_COMMAND_STATUS_OK
 		action := COMMANDACTION_CONTINUE
-		responseLines := []string{"TODO!!!"}
+		responseLines := []string{fmt.Sprintf("%s OK %s Completed", commandPair.sequenceIdent, commandPair.commandStr)}
+
+		if responseMessage.MsgData() != nil {
+			dataLines := responseMessage.MsgData().([]string)
+			for _, x := range dataLines {
+				responseLines = append(responseLines, x)
+			}
+		}
+
 		return CommandResponse{commandStatus: status, action: action, commandResponseLines: responseLines}
 	}
 
