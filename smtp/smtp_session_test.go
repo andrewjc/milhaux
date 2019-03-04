@@ -2,6 +2,7 @@ package smtp
 
 import (
 	"github.com/andrewjc/milhaux/common"
+	apptesting "github.com/andrewjc/milhaux/testing"
 	"github.com/petergtz/pegomock"
 	"testing"
 )
@@ -12,7 +13,7 @@ func TestConnectingToServerPresentsWelcomeMessage(t *testing.T) {
 	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 

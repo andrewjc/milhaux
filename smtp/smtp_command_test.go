@@ -2,6 +2,7 @@ package smtp
 
 import (
 	"github.com/andrewjc/milhaux/common"
+	apptesting "github.com/andrewjc/milhaux/testing"
 	"testing"
 )
 
@@ -9,10 +10,10 @@ func TestHELOCommand(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 	commandResponse := s.HandleCommand(mockSession, "helo 127.0.0.1")
@@ -27,10 +28,10 @@ func TestSubmitsNonHELORequiresHELO(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 
@@ -46,11 +47,11 @@ func TestAllowMultipleMessagePerSession(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
-	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = true
+	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = false
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 
@@ -76,11 +77,11 @@ func TestDisAllowMultipleMessagePerSession(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
-	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = false
+	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = true
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 
@@ -101,11 +102,11 @@ func TestAttemptDataBeforeRcpt(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = false
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 
@@ -122,11 +123,11 @@ func TestAttemptDataBeforeMailFrom(t *testing.T) {
 
 	s := NewCommandProcessor()
 
-	mockChannel := make(chan *SmtpServerChannelMessage)
+	mockChannel := make(chan SmtpServerChannelMessage)
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = false
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 
@@ -147,7 +148,7 @@ func TestDisallowBareLineFeedAfterData(t *testing.T) {
 	smtpServerInstance := SmtpServer_impl{config: common.CreateDefaultAppConfig(), channel: mockChannel}
 	smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION = false
 
-	clientConn, _ := getTestConnection()
+	clientConn, _ := apptesting.GetTestConnection()
 
 	mockSession := NewSmtpSession(smtpServerInstance, clientConn, mockChannel)
 

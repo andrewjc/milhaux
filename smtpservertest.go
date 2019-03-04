@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func main() {
+func maintest() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	var messageChannel = make(chan MainEventMessage)
 

@@ -30,7 +30,7 @@ From: GoIMAP <goimap@example.org>
 hello, world
 `
 
-func main() {
+func maintestimap() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	doAuthTest()

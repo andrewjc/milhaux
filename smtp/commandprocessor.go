@@ -63,7 +63,7 @@ func (s *SmtpCommandProcessor) HandleCommand(smtpSession *SmtpSession, commandLi
 		} else {
 
 			// single or multi message per session policy
-			if smtpSession.smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION == false {
+			if smtpSession.smtpServerInstance.config.GetSmtpServerConfig().SMTP_OPTION_SINGLE_MESSAGE_PER_SESSION == true {
 				if smtpSession.smtpState == SMTP_SESSION_STATE_SUBMIT {
 					// A session has already submitted a message
 					return CommandResponse{COMMANDACTION_EXIT, SMTP_COMMAND_STATUS_SERVICE_CLOSING_CHANNEL, "Single message per session only. Closing session."}
